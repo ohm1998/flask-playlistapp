@@ -1,22 +1,24 @@
 from flask import Flask, request, jsonify,render_template,redirect,url_for,send_from_directory,session
 from werkzeug.utils import secure_filename
 import os
-
-
+from helpers import *
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'super secret'
 
 
 UPLOAD_FOLDER = './uploads'
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-from helpers import *
 
 
 @app.route('/')
 def index():
-	session['count']  = session['count'] + 1
-	return 'hello app is running count : ' + session['count']
+	if 'count' in session.keys():
+		session['count'] = session['count'] + 1
+	else:
+		session['count'] = 0
+	return 'hello app is running count : ' + str(session['count'])
 
 
 @app.route('/upload',methods=['GET','POST'])
