@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title> {%
+	print(data['title'])
+	%} </title>
+</head>
+<body>
+<h1>{% print(data['title']) %}</h1>
+
+<h2>{% print(data['song_id']) %}</h2>
+
+<h3>Artist : {% print(data['artist']) %} </h3> <br>
+<h3>Album : {% print(data['album']) %} </h3>
+<audio autobuffer autoloop loop controls>
+	<source src="/get_song/{% print(data['song_id']) %}.mp3" type="audio/mpeg">
+</audio>
+<br> <br> 
+<a href="/get_song/{% print(data['song_id']) %}.mp3" title="Download {% print(data['title']) %}" download="{% print(data['song_id']) %}.mp3">Download Song</a>
+</body>
+</html>

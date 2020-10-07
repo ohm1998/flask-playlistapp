@@ -1,9 +1,8 @@
-from flask import Flask, request,jsonify,render_template,redirect,url_for,send_from_directory,session
+from flask import Flask, request,render_template,redirect,url_for,send_from_directory
 from werkzeug.utils import secure_filename
 import os
-from helpers import *
 from flask_mysqldb import MySQL
-
+from helpers import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'super secret'
@@ -46,8 +45,8 @@ def register():
 			password = request.form['password']
 			cur = mysql.connection.cursor()
 			query = "INSERT INTO `login`(`username`, `password`) VALUES ('{}','{}')".format(username,password)
-			print(query)
-			cur.execute(query);
+			#print(query)
+			cur.execute(query)
 			mysql.connection.commit()
 			#rv = cur.fetchall()
 			return jsonify({
@@ -57,22 +56,23 @@ def register():
 	except Exception as e:
 		print(e)
 		return str(e)
+
 @app.route('/login',methods=['GET','POST'])
 def login():
 	try:
 		if request.method == 'GET':
 			return render_template('login.html')
 		elif request.method == 'POST':
+			session.clear()
 			username = request.form['username']
 			password = request.form['password']
 			cur = mysql.connection.cursor()
 			query = "select * from login where username = '{}'".format(username)
-			print(query)
 			cur.execute(query);
 			rv = cur.fetchall()
-			session['user_id'] = rv[0][0]
-			session['username'] = rv[0][1]
 			if(rv[0][2]==password):
+				session['user_id'] = rv[0][0]
+				session['username'] = rv[0][1]
 				return jsonify({
 					"status" : "success",
 					"msg" : "login Successfull"
@@ -86,10 +86,15 @@ def login():
 		print(e)
 		return str(e)
 
-
+@app.route('/logout')
+def logout():
+	session.clear()
+	print(url_for("login"))
+	return redirect(url_for("login"))
 
 
 @app.route('/upload',methods=['GET','POST'])
+@login_required
 def upload():
 	try:
 		if request.method == 'GET':
@@ -100,17 +105,55 @@ def upload():
 			file = request.files['file']
 			if check_extension(file.filename):	
 				filename = secure_filename(file.filename)
-				file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+				cur = mysql.connection.cursor()
+				query = ''' 
+				SELECT `AUTO_INCREMENT`
+				FROM  INFORMATION_SCHEMA.TABLES
+				WHERE TABLE_SCHEMA = 'nptel'
+				AND   TABLE_NAME   = 'songs';
+				'''
+				cur.execute(query)
+				rv = cur.fetchall()
+				print(rv)
+				new_song_id = rv[0][0]
+				print(new_song_id)
+				title = request.form['title']
+				artist = request.form['artist']
+				album = request.form['album']
+				print("here")
+				query = "INSERT INTO `songs`(`title`, `artist`, `album`) VALUES ('{}','{}','{}')".format(title,artist,album)
+				file.save(os.path.join(app.config['UPLOAD_FOLDER'], str(new_song_id)+'.mp3'))
+				cur.execute(query)
+				mysql.connection.commit()
 				return 'file Uploaded'
 			else:
 				return 'Only Mp3 files Supported (Uploaded file type is: '  + file.filename.split(".")[-1] + ' )'
 	except Exception as e:
-		print(e)
 		return str(e)
 
 
+@app.route('/song/<songid>')
+def song(songid):
+	print(songid)
+	cur = mysql.connection.cursor()
+	query = "select * from songs where id =" + str(songid)
+	cur.execute(query)
+	#print(help(cur))
+	rv = cur.fetchone()
+	if(rv==None):
+		return {
+		"status" : "fail",
+		"msg" : "no song found"
+		}
+	else:
+		d = {}
+		d['song_id'] = songid
+		d['title'] = rv[1]
+		d['artist'] = rv[2]
+		d['album'] = rv[3]
+		return render_template('song.html',data=d)
 
-@app.route('/uploads/<filename>')
+@app.route('/get_song/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'],filename)
 
