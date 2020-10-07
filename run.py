@@ -73,10 +73,7 @@ def login():
 			if(rv[0][2]==password):
 				session['user_id'] = rv[0][0]
 				session['username'] = rv[0][1]
-				return jsonify({
-					"status" : "success",
-					"msg" : "login Successfull"
-					})
+				return redirect(url_for("home"))
 			else: 
 				return jsonify({
 					"status": "fail",
@@ -173,13 +170,24 @@ def get_song_by_user():
 		query = "select * from songs where user_id="+str(session['user_id'])+" and ( title like '%"+substr+"%' or artist like '%"+substr+"%' or album like '%"+substr+"%')"
 	except Exception as e: #can be replaced with name error
 		query = "select * from songs where user_id="+str(session['user_id'])
-		# cur.execute(query)
-		# res = cur.fetchall()
 	finally:
-		print(query)
 		cur.execute(query)
 		res = cur.fetchall()
 		return jsonify(res)
+
+@app.route('/delete_song/<song_id>',methods=['GET','POST'])
+@login_required
+#While deleting the song check if the song is uploaded by the same user or not
+def delete_song(song_id):
+	file_path = "./"+app.config['UPLOAD_FOLDER']+"/"+str(song_id)+".mp3"
+	if(os.path.exists(file_path)):
+		print("exists")
+		cur = mysql.connection.cursor()
+		query = "delete from songs where id="+str(song_id)
+		cur.execute(query)
+		mysql.connection.commit()
+		os.remove(file_path)
+		return redirect(url_for("home"))
 
 if __name__ == "__main__":
 	app.run(debug=True)

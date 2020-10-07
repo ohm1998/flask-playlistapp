@@ -17,5 +17,7 @@
 </audio>
 <br> <br> 
 <a href="/get_song/{% print(data['song_id']) %}.mp3" title="Download {% print(data['title']) %}" download="{% print(data['title']) %}.mp3">Download Song</a>
+
+<a href="/delete_song/{% print(data['song_id']) %}" title="">Delete This song</a>
 </body>
 </html>
