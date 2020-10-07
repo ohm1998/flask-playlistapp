@@ -114,15 +114,13 @@ def upload():
 				'''
 				cur.execute(query)
 				rv = cur.fetchall()
-				print(rv)
 				new_song_id = rv[0][0]
-				print(new_song_id)
 				title = request.form['title']
 				artist = request.form['artist']
 				album = request.form['album']
-				print("here")
-				query = "INSERT INTO `songs`(`title`, `artist`, `album`) VALUES ('{}','{}','{}')".format(title,artist,album)
+				user_id = session['user_id']
 				file.save(os.path.join(app.config['UPLOAD_FOLDER'], str(new_song_id)+'.mp3'))
+				query = "INSERT INTO `songs`(`title`, `artist`, `album`,`user_id`) VALUES ('{}','{}','{}','{}')".format(title,artist,album,user_id )
 				cur.execute(query)
 				mysql.connection.commit()
 				return 'file Uploaded'
@@ -132,9 +130,16 @@ def upload():
 		return str(e)
 
 
+@app.route('/home')
+@login_required
+def home():
+	d = {}
+	d['username'] = session['username']
+	print(d)
+	return render_template('home.html',data=d)
+
 @app.route('/song/<songid>')
 def song(songid):
-	print(songid)
 	cur = mysql.connection.cursor()
 	query = "select * from songs where id =" + str(songid)
 	cur.execute(query)
@@ -157,6 +162,24 @@ def song(songid):
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'],filename)
 
+@app.route('/get_song_by_user',methods=['GET','POST'])
+@login_required
+def get_song_by_user():
+	query = ""
+	cur = mysql.connection.cursor()
+	try:
+		print("here")
+		substr = request.form["substr"]
+		query = "select * from songs where user_id="+str(session['user_id'])+" and ( title like '%"+substr+"%' or artist like '%"+substr+"%' or album like '%"+substr+"%')"
+	except Exception as e: #can be replaced with name error
+		query = "select * from songs where user_id="+str(session['user_id'])
+		# cur.execute(query)
+		# res = cur.fetchall()
+	finally:
+		print(query)
+		cur.execute(query)
+		res = cur.fetchall()
+		return jsonify(res)
 
 if __name__ == "__main__":
 	app.run(debug=True)

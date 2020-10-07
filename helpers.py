@@ -7,7 +7,6 @@ def check_extension(filename):
 def login_required(func):
 	@wraps(func)
 	def inner(*args, **kwargs):
-		print("Login required")
 		try:
 			if "username" in session.keys():
 				return func(*args, **kwargs)
@@ -17,7 +16,6 @@ def login_required(func):
 		except Exception as e:
 			return jsonify({
 				"status" : "fail",
-				"msg" : "Login Again",
 				"error" : str(e)
 				})
 	return inner
