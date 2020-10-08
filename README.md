@@ -15,5 +15,11 @@
 ### /login -> user login
 ### /register -> register new user
 ### /home -> upload and shows the playlist with search
-### /song/<songid> -> takes to the song page (Here song download and delete options are available)
+### /song/songid -> takes to the song page (Here song download and delete options are available)
 
+##Further Improvement
+
+### Code can be made more modular
+### Meaningful names can be given to the uploaded files in the directory (Currently not given because users might upload files with same names)
+
+Ofcourse SSL has to be used for data transfer
