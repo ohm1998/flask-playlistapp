@@ -96,7 +96,7 @@ def upload():
 				query = "INSERT INTO `songs`(`title`, `artist`, `album`,`user_id`) VALUES ('{}','{}','{}','{}')".format(title,artist,album,user_id )
 				cur.execute(query)
 				mysql.connection.commit()
-				return 'file Uploaded'
+				return redirect(url_for('home'))
 			else:
 				return 'Only Mp3 files Supported (Uploaded file type is: '  + file.filename.split(".")[-1] + ' )'
 	except Exception as e:
