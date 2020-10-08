@@ -3,36 +3,16 @@ from werkzeug.utils import secure_filename
 import os
 from flask_mysqldb import MySQL
 from helpers import *
+from config import *
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'super secret'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_DB'] = 'nptel'
+app.config.from_object(config)
 
 mysql = MySQL(app)
 
-UPLOAD_FOLDER = './uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-
-
 @app.route('/')
 def index():
-	if 'count' in session.keys():
-		session['count'] = session['count'] + 1
-	else:
-		session['count'] = 0
-	return 'hello app is running count : ' + str(session['count'])
-
-
-@app.route('/db')
-def db():
-	#print(help(mysql))
-	cur = mysql.connection.cursor()
-	cur.execute("SELECT * FROM event")
-	rv = cur.fetchall()
-	#print(rv)
-	return str(rv)
+	return redirect(url_for('login'))
 
 @app.route('/register',methods=['GET','POST'])
 def register():
@@ -45,14 +25,10 @@ def register():
 			password = request.form['password']
 			cur = mysql.connection.cursor()
 			query = "INSERT INTO `login`(`username`, `password`) VALUES ('{}','{}')".format(username,password)
-			#print(query)
 			cur.execute(query)
 			mysql.connection.commit()
-			#rv = cur.fetchall()
-			return jsonify({
-				"status": "success",
-				"msg" : "user registered successfully"
-				})
+			
+			redirect(url_for('home'))
 	except Exception as e:
 		print(e)
 		return str(e)
@@ -140,7 +116,6 @@ def song(songid):
 	cur = mysql.connection.cursor()
 	query = "select * from songs where id =" + str(songid)
 	cur.execute(query)
-	#print(help(cur))
 	rv = cur.fetchone()
 	if(rv==None):
 		return {

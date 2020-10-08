@@ -12,7 +12,10 @@ def login_required(func):
 				return func(*args, **kwargs)
 			else:
 				print("Not Authorized")
-				return "Not authorized to access this page"
+				return '''
+				Not authorized to access this page
+				<a href="/login">Login Here</a>
+				'''
 		except Exception as e:
 			return jsonify({
 				"status" : "fail",

@@ -1,0 +1,13 @@
+linux give write and read permissions
+
+name error
+
+more generalised functions can be used at certain places //for mysql
+
+code can be more modular into seperate routes or folders
+
+config seperation
+
+default parameters for mysql used. root and no password.
+
+Have to be changed according to you
