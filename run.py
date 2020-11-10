@@ -28,7 +28,7 @@ def register():
 			cur.execute(query)
 			mysql.connection.commit()
 			
-			redirect(url_for('home'))
+			return redirect(url_for('home'))
 	except Exception as e:
 		print(e)
 		return str(e)
